@@ -1,0 +1,6 @@
+{
+	"prefix": "!",
+	"token": "process.env.BOT_TOKEN",
+	"ihlchannel": "atdl-ihl-check-in",
+	"ihlrole": "IHL Verified"
+}
