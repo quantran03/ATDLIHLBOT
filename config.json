@@ -2,5 +2,8 @@
 	"prefix": "!",
 	"token": "process.env.BOT_TOKEN",
 	"ihlchannel": "atdl-ihl-check-in",
-	"ihlrole": "IHL Verified"
+	"ihlrole": "IHL Verified",
+	"faceitinvite": "[INSERT LINK HERE]",
+	"ihlbannedrole": "IHL Banned",
+	"adminrole": "IHL Admin"
 }
