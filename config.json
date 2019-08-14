@@ -3,7 +3,7 @@
 	"token": "process.env.BOT_TOKEN",
 	"ihlchannel": "atdl-ihl-check-in",
 	"ihlrole": "IHL Verified",
-	"faceitinvite": "[INSERT LINK HERE]",
+	"faceitinvite": "https://www.faceit.com/en/inv/ktIWGtb",
 	"ihlbannedrole": "IHL Banned",
 	"adminrole": "IHL Admin"
 }

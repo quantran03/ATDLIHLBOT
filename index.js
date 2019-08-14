@@ -28,7 +28,8 @@ client.on('message', message => {
                 let ihlRole = message.guild.roles.find(role => role.name === config.ihlrole);
                 message.member.addRole(ihlRole).catch(console.error);
                 console.log("Verified member " + message.author);
-                message.author.send("Thank you for registering for the ATDL SEA in-house league! \nYou can now join the STANDARD FACEIT hub using the link below: \n" + config.faceitinvite + "\nDM the admins for access to the higher ranked queue.");
+                //long as fuck line
+                message.author.send("Thank you for registering for the ATDL SEA in-house league!\n--\nYou can now join the **standard** Faceit hub using the link below. This standard queue will be available to all players of all skill levels.\n" + config.faceitinvite + "\n--\nIf you are below divine and would like access to the sub divine queue, DM the admins for the invite link.");
             }
             
         }
