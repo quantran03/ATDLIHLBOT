@@ -106,7 +106,10 @@ client.on('message', message => {
                 });
             }
             
-            if (message.content === config.prefix + "recentmatch"){
+            
+        }
+        
+        if (message.content === config.prefix + "recentmatch"){
                 //Call FACEIT API
                 getFACEITData(function(data){
                     
@@ -132,8 +135,6 @@ client.on('message', message => {
  					
 				}, 0, 1, "all");
             }
-        }
-        
 
     }
 });
