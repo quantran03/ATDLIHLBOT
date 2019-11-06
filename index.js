@@ -46,6 +46,9 @@ function formatDate(date) {
   var hours = date.getHours();
   var minutes = date.getMinutes();
   var ampm = hours >= 12 ? 'pm' : 'am';
+  var offset = date.getTimezoneOffset();
+  var offsetHours = offset / 60;
+  hours = hours + offsetHours + config.timezone; //Manipulating time so that it shows the right time zone.
   hours = hours % 12;
   hours = hours ? hours : 12; // the hour '0' should be '12'
   minutes = minutes < 10 ? '0'+minutes : minutes;
@@ -138,7 +141,8 @@ client.on('message', message => {
 
     }
 });
-
+var dt = new Date();
+console.log(dt.getTimezoneOffset());
 /*
 getFACEITData(function(data){
     console.log(data);
@@ -148,6 +152,5 @@ getFACEITData(function(data){
 */
 //console.log (getFACEITData());
 //Login
-//client.login("MzY1ODUwOTMyNTczMTEwMjc1.XcFvpA.7HQOkG9aq4peEi6DmRnLGh6c_kA");
 client.login(process.env.BOT_TOKEN);
 
