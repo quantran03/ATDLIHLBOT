@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('./config.json');
 var obj;
-//Bot init
+// Bot init
 client.once('ready', () =>{
     console.log('Bot up and running.');
     client.user.setActivity("with Mei");
@@ -11,7 +11,7 @@ client.once('ready', () =>{
 
 var request = require("request");
 
-//FACEIT API call function
+// FACEIT API call function
 function getFACEITData(callbackFunction, offsetVar, limitVar, typeVar){
     var options = { method: 'GET',
     url: 'https://open.faceit.com/data/v4/hubs/fe4b3380-e4f5-48eb-9abd-10ed8cce99f8/matches',
@@ -30,7 +30,7 @@ function getFACEITData(callbackFunction, offsetVar, limitVar, typeVar){
 
 		
     request(options, function (error, response, body) {
-    		//getting data from API
+    		// getting data from API
       
         if (error) throw new Error(error);
         obj = JSON.parse(body);
@@ -41,14 +41,14 @@ function getFACEITData(callbackFunction, offsetVar, limitVar, typeVar){
       
     }
 
-//Date format function
+// Date format function
 function formatDate(date) {
   var hours = date.getHours();
   var minutes = date.getMinutes();
-  var ampm = hours >= 12 ? 'pm' : 'am';
+  var ampm = hours % 24 >= 12 ? 'pm' : 'am';
   var offset = date.getTimezoneOffset();
   var offsetHours = offset / 60;
-  hours = hours + offsetHours + config.timezone; //Manipulating time so that it shows the right time zone.
+  hours = hours + offsetHours + config.timezone; // Manipulating time so that it shows the right time zone.
   hours = hours % 12;
   hours = hours ? hours : 12; // the hour '0' should be '12'
   minutes = minutes < 10 ? '0'+minutes : minutes;
@@ -58,26 +58,26 @@ function formatDate(date) {
 }
 
 
-//On message receive
+// On message receive
 client.on('message', message => {
     
-    //IHL registration
+    // IHL registration
     if(message.channel.name == config.ihlchannel){
 
-        //Verifying correct format
+        // Verifying correct format
         if (message.content.startsWith("ATDL:")){
             let ihlBannedRole = message.guild.roles.find(role => role.name === config.ihlbannedrole);
 
-            //Checking for no ban
+            // Checking for no ban
             if(message.member.roles.has(ihlBannedRole.id)) {
                 message.author.send("Sorry, you can not participate in the ATDL SEA in-house league as of now because you are banned.")
             } else {
                 
-                //DMing info and giving role
+                // DMing info and giving role
                 let ihlRole = message.guild.roles.find(role => role.name === config.ihlrole);
                 message.member.addRole(ihlRole).catch(console.error);
                 console.log("Verified member " + message.author);
-                //long as fuck line
+                // long as fuck line
                 message.author.send("Thank you for registering for the ATDL SEA in-house league!\n--\nYou can now join the **standard** Faceit hub using the link below. This standard queue will be available to all players of all skill levels.\n" + config.faceitinvite + "\n--\nIf you are below divine and would like access to the sub divine queue, DM the admins for the invite link.");
             }
             
@@ -89,10 +89,10 @@ client.on('message', message => {
 
         let adminRole = message.guild.roles.find(role => role.name === config.adminrole);
 
-        //Checking IHL Admin role
+        // Checking IHL Admin role
         if(message.member.roles.has(adminRole.id)){
             
-            //Open and close queue command
+            // Open and close queue command
             if (message.content === config.prefix + "open"){
                 console.log("Open q")
                 message.channel.bulkDelete(2);
@@ -113,25 +113,41 @@ client.on('message', message => {
         }
         
         if (message.content === config.prefix + "recentmatch"){
-                //Call FACEIT API
+                // Call FACEIT API
                 getFACEITData(function(data){
                     
-                    //Getting and formatting date
+                    // Getting and formatting date
                     
                     var gameStartTime = new Date(data.items[0].configured_at * 1000); //configured_at instead os started_at because game may be cancelled.
                     var gameStartString = formatDate(gameStartTime);
 
-                    //Construct Embed from API data
+                    // Construct Embed from API data
                     var embedMsg = new Discord.RichEmbed()
                     .setColor('#4287f5')
                     .setTitle('Most recent IHL Match')
                     .setAuthor('ATDL IHL BOT', 'https://i.imgur.com/FCNHTgV.png')
                     .setDescription('Below is a summary of the most recent match of the ATDL in-house league.')
                     .addField('Status', data.items[0].status)
-                    .addField('Time started', gameStartString)
-                    .addField(data.items[0].teams.faction1.name, `${data.items[0].teams.faction1.roster[0].nickname}\n${data.items[0].teams.faction1.roster[1].nickname}\n${data.items[0].teams.faction1.roster[2].nickname}\n${data.items[0].teams.faction1.roster[3].nickname}\n${data.items[0].teams.faction1.roster[4].nickname}`, true)
-                    .addField(data.items[0].teams.faction2.name, `${data.items[0].teams.faction2.roster[0].nickname}\n${data.items[0].teams.faction2.roster[1].nickname}\n${data.items[0].teams.faction2.roster[2].nickname}\n${data.items[0].teams.faction2.roster[3].nickname}\n${data.items[0].teams.faction2.roster[4].nickname}`, true)
-                    .setTimestamp()
+                    .addField('Time started', gameStartString);
+
+                    // If match is already finished, display winner
+                    if (data.items[0].status === "FINISHED"){
+                        if (data.items[0].results.winner === "faction1"){
+                            // If team 1 wins
+                            embedMsg.addField(data.items[0].teams.faction1.name + " [WINNER]", `${data.items[0].teams.faction1.roster[0].nickname}\n${data.items[0].teams.faction1.roster[1].nickname}\n${data.items[0].teams.faction1.roster[2].nickname}\n${data.items[0].teams.faction1.roster[3].nickname}\n${data.items[0].teams.faction1.roster[4].nickname}`, true);
+                            embedMsg.addField(data.items[0].teams.faction2.name, `${data.items[0].teams.faction2.roster[0].nickname}\n${data.items[0].teams.faction2.roster[1].nickname}\n${data.items[0].teams.faction2.roster[2].nickname}\n${data.items[0].teams.faction2.roster[3].nickname}\n${data.items[0].teams.faction2.roster[4].nickname}`, true);
+                        } else if(data.items[0].results.winner === "faction2"){
+                            // If team 2 wins
+                            embedMsg.addField(data.items[0].teams.faction1.name, `${data.items[0].teams.faction1.roster[0].nickname}\n${data.items[0].teams.faction1.roster[1].nickname}\n${data.items[0].teams.faction1.roster[2].nickname}\n${data.items[0].teams.faction1.roster[3].nickname}\n${data.items[0].teams.faction1.roster[4].nickname}`, true);
+                            embedMsg.addField(data.items[0].teams.faction2.name + " [WINNER]", `${data.items[0].teams.faction2.roster[0].nickname}\n${data.items[0].teams.faction2.roster[1].nickname}\n${data.items[0].teams.faction2.roster[2].nickname}\n${data.items[0].teams.faction2.roster[3].nickname}\n${data.items[0].teams.faction2.roster[4].nickname}`, true);
+                        }
+                    } else{
+                        // If game is cancelled or in progress
+                        embedMsg.addField(data.items[0].teams.faction1.name, `${data.items[0].teams.faction1.roster[0].nickname}\n${data.items[0].teams.faction1.roster[1].nickname}\n${data.items[0].teams.faction1.roster[2].nickname}\n${data.items[0].teams.faction1.roster[3].nickname}\n${data.items[0].teams.faction1.roster[4].nickname}`, true);
+                        embedMsg.addField(data.items[0].teams.faction2.name, `${data.items[0].teams.faction2.roster[0].nickname}\n${data.items[0].teams.faction2.roster[1].nickname}\n${data.items[0].teams.faction2.roster[2].nickname}\n${data.items[0].teams.faction2.roster[3].nickname}\n${data.items[0].teams.faction2.roster[4].nickname}`, true);
+                    }
+                    
+                    embedMsg.setTimestamp()
                     .setFooter('Made by LOLEnigMatic');
                     
                     message.channel.send(embedMsg);
@@ -141,16 +157,9 @@ client.on('message', message => {
 
     }
 });
-var dt = new Date();
-console.log(dt.getTimezoneOffset());
-/*
-getFACEITData(function(data){
-    console.log(data);
-    console.log(data.items[0].status);
-    console.log(data.items[0].started_at);
-})
-*/
-//console.log (getFACEITData());
-//Login
+
+
+// Login
+
 client.login(process.env.BOT_TOKEN);
 
