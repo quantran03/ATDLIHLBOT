@@ -5,6 +5,10 @@
 	"ihlrole": "IHL Verified",
 	"faceitinvite": "https://www.faceit.com/en/inv/ktIWGtb",
 	"ihlbannedrole": "IHL Banned",
-	"adminrole": "IHL Admin",
-	"timezone": 8
+	"ihladminrole": "IHL Admin",
+	"modrole": "Moderator",
+	"adminrole":"Admin",
+	"timezone": 8,
+	"reactioncheckprefix": "House check-in:",
+	"houserole": "ATDL Blitz: House Player"
 }

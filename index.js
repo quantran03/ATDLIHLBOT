@@ -1,8 +1,11 @@
 //Init
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const config = require('./config.json');
 var obj;
+
+let userReactionList = []; //Array to store users for reaction command
+
 // Bot init
 client.once('ready', () =>{
     console.log('Bot up and running.');
@@ -57,6 +60,61 @@ function formatDate(date) {
   return date.getDate() + "/" + month  + "/" + date.getFullYear() + "  " + strTime;
 }
 
+ //Reaction check-in for ATDL Blitz House Members
+        
+//Upon reaction removal
+client.on('messageReactionRemove', async (reaction, user) => {
+    // When we receive a reaction we check if the reaction is partial or not. Reactions are partial if they are from messages posted before the bot is started
+    if (reaction.partial){
+
+        try{
+            await reaction.fetch();
+        }
+        catch(error){
+            console.log('Unable to fetch: ', error);
+            return;
+        }
+    }
+
+    // 3 tests: 1- Emoji must be WhiteCheckMark; 2- Message should be House Check-in; 3- The user must already be present in the list
+    let messageContent = reaction.message.content
+
+    if (reaction.emoji.name === '✅' && messageContent.toLowerCase().startsWith(config.reactioncheckprefix) && userReactionList.includes(user)){
+        // Splice works based on array index so first the index of this user is found and then just the user is spliced
+        userReactionList.splice(userReactionList.indexOf(user));
+        //Logging for debug
+        console.log("User unreacted & removed from list");
+    }
+
+});
+
+// When a message reaction is added, user and reaction data is given to the function below.
+client.on('messageReactionAdd', async (reaction, user) => {
+    // When we receive a reaction we check if the reaction is partial or not. Reactions are partial if they are from messages posted before the bot is started
+    if (reaction.partial){
+
+        try{
+            await reaction.fetch();
+        }
+        catch(error){
+            console.log('Unable to fetch: ', error);
+            return;
+        }
+
+    }
+    let currentmember = reaction.message.guild.member(user);
+
+      // If the user already exists in the array, this should not proceed to avoid duplicates. The message tested must include house check-in and the emoji must be the white check mark emoji
+    if((!userReactionList.includes(user)) && reaction.message.content.startsWith(config.reactioncheckprefix) && reaction.emoji.name === '✅' ) {
+        // user data is added to the array defined at the beginning of this file
+        userReactionList.push(user);
+        // log is for debugging purposes
+        console.log('User reacted and added to list');
+        //console.log(userReactionList);
+    }
+
+});
+
 
 // On message receive
 client.on('message', message => {
@@ -87,10 +145,12 @@ client.on('message', message => {
     if(message.content.startsWith(config.prefix)){
         console.log("Command detected");
 
+        let ihlAdminRole = message.guild.roles.find(role => role.name === config.ihladminrole);
+        let modRole = message.guild.roles.find(role => role.name === config.modrole);
         let adminRole = message.guild.roles.find(role => role.name === config.adminrole);
 
         // Checking IHL Admin role
-        if(message.member.roles.has(adminRole.id)){
+        if(message.member.roles.has(ihlAdminRole.id)){
             
             // Open and close queue command
             if (message.content === config.prefix + "open"){
@@ -110,8 +170,34 @@ client.on('message', message => {
             }
             
             
+            
         }
-        
+
+        //Only mods and admins can execute this command
+        if(message.member.roles.has(adminRole.id) || message.member.roles.has(modRole.id)){
+
+            if (message.content === config.prefix + "reactionlist"){
+            //Ensures error isn't thrown if list is empty
+                console.log(userReactionList);
+                console.log(userReactionList.length);
+                //message.channel.send(userReactionList);
+                if(userReactionList.length > 0){
+                    //Outputting user objects
+                    message.channel.send(userReactionList);
+                } else{
+                    message.channel.send("No users found in reaction list.");
+                }
+            }
+
+            if(message.content === config.prefix + "clearreactionlist") {
+                // Empties list
+                userReactionList = [];
+                // Debugging and Confirmation
+                message.channel.send('Reaction List Cleared');
+            }
+        }
+       
+        //FACEIT Recent match comand
         if (message.content === config.prefix + "recentmatch"){
                 // Call FACEIT API
                 getFACEITData(function(data){
