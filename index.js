@@ -80,10 +80,10 @@ client.on('messageReactionRemove', async (reaction, user) => {
     let messageContent = reaction.message.content
 
     if (reaction.emoji.name === '✅' && messageContent.toLowerCase().startsWith(config.reactioncheckprefix) && userReactionList.includes(user)){
-        // Splice works based on array index so first the index of this user is found and then just the user is spliced
-        userReactionList.splice(userReactionList.indexOf(user));
+        // Splice works based on array index so first the index of this user is found and then just the user is spliced. Note that deleteCount has to be 1 since it would otherwise remove all users starting from that index.
+        removedUser = userReactionList.splice(userReactionList.indexOf(user), 1);
         //Logging for debug
-        console.log("User unreacted & removed from list");
+        console.log("User unreacted & removed from list: " + removeduser.username);
     }
 
 });
